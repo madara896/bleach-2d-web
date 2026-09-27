@@ -11,5 +11,11 @@
   "devDependencies": {
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "@pixi/filter-bloom": "^5.1.1",
+    "@pixi/filter-color-matrix": "^7.4.3",
+    "@pixi/filter-glow": "^5.2.1",
+    "pixi.js": "^8.21.0"
   }
 }

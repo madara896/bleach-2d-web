@@ -315,6 +315,168 @@ export const GRIMMJOW_DEFINITION: CharacterDefinition = {
   }
 };
 
+// ─── New Characters ────────────────────────────────────────────────────────
+
+export const RUKIA_DEFINITION: CharacterDefinition = {
+  id: 'rukia',
+  name: 'Rukia Kuchiki',
+  title: 'Lieutenant of Squad 13',
+  japaneseName: '朽木 ルキア',
+  faction: 'shinigami',
+  themeColor: '#aaddff',
+  secondaryColor: '#002244',
+  reiatsuColor: '#88ccff',
+  stats: {
+    maxHp: 900,
+    walkSpeed: 5.0,
+    dashSpeed: 14.0,
+    jumpForce: 15.0,
+    attackPower: 0.9,
+    defense: 0.9,
+    reiatsuGainRate: 1.2,
+  },
+  awakeningName: 'Bankai: Hakka no Togame',
+  awakeningDuration: 720,
+  awakeningDescription: 'Absolute zero ice engulfs her in crystalline robes that freeze everything they touch.',
+  ultimateName: 'Hakka no Togame',
+  ultimateCost: 300,
+  moves: [
+    { name: 'Ice Dance', command: 'J → J → K', description: 'Rapid Sode no Shirayuki ice strikes', cost: 0 },
+    { name: 'Some no Mai', command: 'U (Special)', description: 'Encircles opponent in a white ring of absolute zero', cost: 35 },
+    { name: 'Tsugi no Mai', command: 'J+K (Special 2)', description: 'Twin ice pillars erupt from below', cost: 40 },
+    { name: 'Shunpo Weave', command: 'L (Shunpo)', description: 'Elegant multi-step flash step', cost: 20 },
+    { name: 'Bankai: Hakka', command: 'O (At 200+ Reiatsu)', description: 'Absolute zero crystalline bankai form', cost: 200 },
+    { name: 'Hakka no Togame', command: 'S + O (At 300 Reiatsu)', description: 'White mist explosion — everything within range freezes solid', cost: 300 },
+  ],
+  quotes: {
+    select: 'I will not let sentiment cloud my blade.',
+    roundStart: 'Dance, Sode no Shirayuki.',
+    awaken: 'BANKAI... HAKKA NO TOGAME!',
+    ultimate: 'White mist... take everything. HAKKA NO TOGAME!',
+    victory: 'You could not withstand the cold.',
+  },
+};
+
+export const HITSUGAYA_DEFINITION: CharacterDefinition = {
+  id: 'hitsugaya',
+  name: 'Tōshirō Hitsugaya',
+  title: 'Captain of Squad 10 — Ice Dragon',
+  japaneseName: '日番谷 冬獅郎',
+  faction: 'shinigami',
+  themeColor: '#44ddff',
+  secondaryColor: '#003355',
+  reiatsuColor: '#00ccff',
+  stats: {
+    maxHp: 950,
+    walkSpeed: 5.2,
+    dashSpeed: 15.0,
+    jumpForce: 16.0,
+    attackPower: 1.05,
+    defense: 1.0,
+    reiatsuGainRate: 1.1,
+  },
+  awakeningName: 'Bankai: Daiguren Hyōrinmaru',
+  awakeningDuration: 900,
+  awakeningDescription: 'A dragon of ice emerges, encasing Hitsugaya in crystalline armor and a massive ice dragon.',
+  ultimateName: 'Hyōten Hyakkasō',
+    ultimateCost: 300,
+  moves: [
+    { name: 'Dragon Strike', command: 'J → J → K', description: 'Ice-blade slash combo with dragon tail swing', cost: 0 },
+    { name: 'Hyōryū Senbi', command: 'U (Special)', description: 'Crescent-shaped ice blade fired from Hyōrinmaru', cost: 35 },
+    { name: 'Ice Dragon Breath', command: 'J+K (Special 2)', description: 'Calls down Hyōrinmaru ice dragon for area freeze', cost: 50 },
+    { name: 'Ice Step', command: 'L (Shunpo)', description: 'Shunpo leaving ice crystals in the path', cost: 20 },
+    { name: 'Daiguren Bankai', command: 'O (At 200+ Reiatsu)', description: 'Dragon-armored bankai with 12 ice wings', cost: 200 },
+    { name: 'Hyōten Hyakkasō', command: 'S + O (At 300 Reiatsu)', description: 'Hundred flowers scatter from the sky — instant freeze field', cost: 300 },
+  ],
+  quotes: {
+    select: 'A captain does not need to show his bankai to the weak.',
+    roundStart: 'Freeze, Hyōrinmaru.',
+    awaken: 'BANKAI... DAIGUREN HYŌRINMARU!',
+    ultimate: 'Scatter... HYŌTEN HYAKKASŌ!',
+    victory: 'Your flames could not melt what was never meant to thaw.',
+  },
+};
+
+export const URYU_DEFINITION: CharacterDefinition = {
+  id: 'uryu',
+  name: 'Uryū Ishida',
+  title: 'Last Quincy — Sternritter A',
+  japaneseName: '石田 雨竜',
+  faction: 'quincy',
+  themeColor: '#ddddff',
+  secondaryColor: '#111155',
+  reiatsuColor: '#aaaaff',
+  stats: {
+    maxHp: 870,
+    walkSpeed: 4.6,
+    dashSpeed: 14.5,
+    jumpForce: 13.5,
+    attackPower: 0.95,
+    defense: 0.85,
+    reiatsuGainRate: 1.3,
+  },
+  awakeningName: 'Vollständig: Kirchenlied St. Drei Götter',
+  awakeningDuration: 840,
+  awakeningDescription: 'Radiates the full Quincy cross halo — silver wings of spirit arrows blot out the sky.',
+  ultimateName: 'Licht Regen',
+  ultimateCost: 300,
+  moves: [
+    { name: 'Arrow Burst', command: 'J → J → K', description: 'Rapid Heilig Pfeil shots into close-range Seele Schneider slash', cost: 0 },
+    { name: 'Heilig Pfeil', command: 'U (Special)', description: 'A volley of sacred spirit arrows', cost: 30 },
+    { name: 'Seele Schneider', command: 'J+K (Special 2)', description: 'Spirit-blade arrow used as a melee weapon', cost: 35 },
+    { name: 'Hirenkyaku', command: 'L (Shunpo)', description: 'Quincy flash step on a platform of reishi', cost: 20 },
+    { name: 'Vollständig', command: 'O (At 200+ Reiatsu)', description: 'Full Quincy power — halo wings and silver aura', cost: 200 },
+    { name: 'Licht Regen', command: 'S + O (At 300 Reiatsu)', description: 'A thousand sacred arrows rain from the heavens at once', cost: 300 },
+  ],
+  quotes: {
+    select: 'As the last Quincy, I cannot afford to fall here.',
+    roundStart: 'I will show you the pride of the Quincy.',
+    awaken: 'Vollständig... KIRCHENLIED!',
+    ultimate: 'Rain of light — LICHT REGEN!',
+    victory: 'The Quincy are not extinct. Remember that.',
+  },
+};
+
+export const ORIHIME_DEFINITION: CharacterDefinition = {
+  id: 'orihime',
+  name: 'Orihime Inoue',
+  title: 'Shun Shun Rikka — Reject the World',
+  japaneseName: '井上 織姫',
+  faction: 'shinigami',
+  themeColor: '#ffaadd',
+  secondaryColor: '#440044',
+  reiatsuColor: '#ff88ff',
+  stats: {
+    maxHp: 820,
+    walkSpeed: 4.4,
+    dashSpeed: 13.0,
+    jumpForce: 13.0,
+    attackPower: 0.85,
+    defense: 1.15,
+    reiatsuGainRate: 1.4,
+  },
+  awakeningName: 'Shun Shun Rikka: Full Rejection',
+  awakeningDuration: 780,
+  awakeningDescription: 'The six fairies surround her in a barrier of absolute rejection, reversing any reality.',
+  ultimateName: 'Sōten Kisshun',
+  ultimateCost: 300,
+  moves: [
+    { name: 'Fairy Strike', command: 'J → J → K', description: 'Koten Zanshun cuts + Hinagiku barrier bash', cost: 0 },
+    { name: 'Koten Zanshun', command: 'U (Special)', description: 'Tsubaki fires a single piercing beam', cost: 30 },
+    { name: 'Santen Kesshun', command: 'J+K (Special 2)', description: 'Triangle shield reflects projectiles', cost: 35 },
+    { name: 'Fairy Step', command: 'L (Shunpo)', description: 'Glides on Shun Shun Rikka barrier platforms', cost: 15 },
+    { name: 'Full Rejection', command: 'O (At 200+ Reiatsu)', description: 'Shun Shun Rikka full form — all abilities enhanced', cost: 200 },
+    { name: 'Sōten Kisshun', command: 'S + O (At 300 Reiatsu)', description: 'Dome of absolute rejection: reverses all damage dealt in window', cost: 300 },
+  ],
+  quotes: {
+    select: 'I will fight for the people I love. I won\'t lose.',
+    roundStart: 'Shun Shun Rikka, protect us!',
+    awaken: 'Full rejection... I reject this reality!',
+    ultimate: 'Return... everything. SŌTEN KISSHUN!',
+    victory: 'I wanted to protect everyone. I\'m glad I could.',
+  },
+};
+
 export const ROSTER: CharacterDefinition[] = [
   ICHIGO_DEFINITION,
   ULQUIORRA_DEFINITION,
@@ -323,9 +485,14 @@ export const ROSTER: CharacterDefinition[] = [
   WHITE_ZANGETSU_DEFINITION,
   BYAKUYA_DEFINITION,
   KENPACHI_DEFINITION,
-  GRIMMJOW_DEFINITION
+  GRIMMJOW_DEFINITION,
+  RUKIA_DEFINITION,
+  HITSUGAYA_DEFINITION,
+  URYU_DEFINITION,
+  ORIHIME_DEFINITION,
 ];
 
 export function getCharacterById(id: string): CharacterDefinition {
   return ROSTER.find(c => c.id === id) || ICHIGO_DEFINITION;
 }
+

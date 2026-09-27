@@ -1,7 +1,8 @@
-// Bleach: Bankai Resurrection - Main Web Application Entry Point
+// Bleach: Souls of Eternity — Main Web Application Entry Point
 import { SceneManager } from './scenes/SceneManager';
 import { audio } from './engine/AudioEngine';
 import { input } from './engine/InputManager';
+import { preloadGameAssets } from './engine/SpriteLoader';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -17,7 +18,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const sceneManager = new SceneManager(canvas);
 
-  // Audio start prompt overlay
+  // Start preloading all sprites in background (non-blocking)
+  preloadGameAssets().catch(console.warn);
+
   const audioOverlay = document.getElementById('audio-overlay');
   const btnStart = document.getElementById('btn-start');
 

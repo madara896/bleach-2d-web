@@ -1,7 +1,9 @@
-// Bleach 2D Web Game: Roster Select Scene with Multi-Faction Support & Mouse Controls
+// Bleach: Souls of Eternity — Roster Select Scene with Real Character Portraits
 import { ROSTER, type CharacterDefinition } from '../data/characters/Roster';
 import type { Faction } from '../types';
 import { audio } from '../engine/AudioEngine';
+import { spriteLoader, CHARACTER_SPRITE_MAP } from '../engine/SpriteLoader';
+
 
 export class RosterSelectScene {
   public selectedIndex: number = 0;
@@ -57,12 +59,13 @@ export class RosterSelectScene {
       }
 
       // 2. Check Character Cards
-      const gridX = 60;
-      const gridY = 145;
+      const gridX = 30;
+      const gridY = 130;
       const cols = 4;
-      const cardW = 120;
-      const cardH = 140;
-      const gap = 16;
+      const cardW = 134;
+      const cardH = 160;
+      const gap = 10;
+
 
       for (let i = 0; i < roster.length; i++) {
         const col = i % cols;
@@ -233,12 +236,12 @@ export class RosterSelectScene {
   }
 
   private renderCharacterGrid(ctx: CanvasRenderingContext2D, roster: CharacterDefinition[], activeChar: CharacterDefinition): void {
-    const gridX = 60;
-    const gridY = 145;
+    const gridX = 30;
+    const gridY = 130;
     const cols = 4;
-    const cardW = 120;
-    const cardH = 140;
-    const gap = 16;
+    const cardW = 134;
+    const cardH = 160;
+    const gap = 10;
 
     roster.forEach((c, idx) => {
       const col = idx % cols;
@@ -248,55 +251,104 @@ export class RosterSelectScene {
       const isSelected = c.id === activeChar.id;
       const isP1 = this.p1Character?.id === c.id;
       const isP2 = this.p2Character?.id === c.id;
+      const pulse = 1 + (isSelected ? Math.sin(this.tick * 0.1) * 0.02 : 0);
 
       ctx.save();
-      // Card Background
-      ctx.fillStyle = isSelected ? 'rgba(30, 41, 59, 0.95)' : 'rgba(15, 23, 42, 0.8)';
+
+      // Selected scale pulse
+      if (isSelected) {
+        ctx.translate(x + cardW / 2, y + cardH / 2);
+        ctx.scale(pulse, pulse);
+        ctx.translate(-(x + cardW / 2), -(y + cardH / 2));
+      }
+
+      // Card background
+      ctx.fillStyle = isSelected ? 'rgba(20, 10, 30, 0.95)' : 'rgba(10, 15, 25, 0.85)';
       ctx.strokeStyle = isSelected ? c.reiatsuColor : isP1 ? '#38bdf8' : isP2 ? '#ef4444' : '#334155';
       ctx.lineWidth = isSelected ? 3 : 1.5;
       if (isSelected) {
         ctx.shadowColor = c.reiatsuColor;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 20;
       }
-
-      ctx.roundRect(x, y, cardW, cardH, 6);
+      ctx.roundRect(x, y, cardW, cardH, 8);
       ctx.fill();
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
-      // Card Header Banner
-      ctx.fillStyle = c.themeColor;
-      ctx.fillRect(x + 1, y + 1, cardW - 2, 8);
+      // Portrait image
+      const img = spriteLoader.get(CHARACTER_SPRITE_MAP[c.id] ?? '');
+      if (img && img.width > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(x + 2, y + 2, cardW - 4, cardH - 40, 6);
+        ctx.clip();
+        // Draw image — show upper portion (face/torso) of the character
+        const aspect = img.width / img.height;
+        const drawW = cardW - 4;
+        const drawH = drawW / aspect;
+        // Show top 70% of character image (face/torso area)
+        const srcH = img.height * 0.7;
+        ctx.drawImage(img, 0, 0, img.width, srcH, x + 2, y + 2, drawW, cardH - 40);
+        ctx.restore();
 
-      // Stylized Initial / Emblem
+        // Gradient overlay on portrait bottom
+        const fadeGrad = ctx.createLinearGradient(x, y + cardH - 70, x, y + cardH - 38);
+        fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        fadeGrad.addColorStop(1, 'rgba(10,5,20,0.9)');
+        ctx.fillStyle = fadeGrad;
+        ctx.fillRect(x + 2, y + cardH - 70, cardW - 4, 32);
+      } else {
+        // Fallback: Initial letter
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '900 48px Impact, sans-serif';
+        ctx.fillStyle = isSelected ? c.reiatsuColor : '#475569';
+        ctx.shadowColor = c.reiatsuColor;
+        ctx.shadowBlur = isSelected ? 14 : 0;
+        ctx.fillText(c.name.split(' ')[0][0], x + cardW / 2, y + (cardH - 38) / 2);
+        ctx.shadowBlur = 0;
+      }
+
+      // Colored bottom banner
+      const bannerGrad = ctx.createLinearGradient(x, y + cardH - 38, x + cardW, y + cardH - 38);
+      bannerGrad.addColorStop(0, c.themeColor + 'cc');
+      bannerGrad.addColorStop(1, c.secondaryColor + 'cc');
+      ctx.fillStyle = bannerGrad;
+      ctx.roundRect(x + 1, y + cardH - 38, cardW - 2, 37, [0, 0, 7, 7]);
+      ctx.fill();
+
+      // Character first name
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = '900 36px Impact, sans-serif';
-      ctx.fillStyle = isSelected ? '#ffffff' : '#475569';
-      ctx.fillText(c.name.split(' ')[0][0], x + cardW / 2, y + 55);
+      ctx.font = '700 12px "Segoe UI", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(c.name.split(' ')[0].toUpperCase(), x + cardW / 2, y + cardH - 22);
 
-      // Japanese Calligraphy Kanji
-      ctx.font = '700 13px "Segoe UI", serif';
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillText(c.japaneseName, x + cardW / 2, y + 88);
+      // Faction dot
+      const factionColors: Record<string, string> = {
+        shinigami: '#38bdf8', arrancar: '#22c55e',
+        quincy: '#a78bfa', transcendent: '#f59e0b',
+      };
+      ctx.fillStyle = factionColors[c.faction] ?? '#94a3b8';
+      ctx.beginPath();
+      ctx.arc(x + cardW - 14, y + cardH - 9, 5, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Character Name
-      ctx.font = '700 13px "Segoe UI", sans-serif';
-      ctx.fillStyle = isSelected ? '#f8fafc' : '#cbd5e1';
-      ctx.fillText(c.name.split(' ')[0], x + cardW / 2, y + 115);
-
-      // P1 / P2 Badges
+      // P1 / P2 badges
       if (isP1) {
         ctx.fillStyle = '#0284c7';
-        ctx.fillRect(x + 6, y + 6, 26, 16);
+        ctx.roundRect(x + 5, y + 5, 28, 18, 3);
+        ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.font = '800 10px sans-serif';
+        ctx.font = '800 11px sans-serif';
         ctx.fillText('P1', x + 19, y + 14);
       }
       if (isP2) {
         ctx.fillStyle = '#dc2626';
-        ctx.fillRect(x + cardW - 32, y + 6, 26, 16);
+        ctx.roundRect(x + cardW - 33, y + 5, 28, 18, 3);
+        ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.font = '800 10px sans-serif';
+        ctx.font = '800 11px sans-serif';
         ctx.fillText('P2', x + cardW - 19, y + 14);
       }
 
