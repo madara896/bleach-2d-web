@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bleach: Bankai Resurrection - 2D Web Fighting Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top Navigation & Controls Toolbar -->
+      <header class="game-header">
+        <div class="logo-badge">
+          <span class="kanji-badge">死神</span>
+          <span class="game-title">BLEACH: BANKAI RESURRECTION</span>
+        </div>
+        <div class="header-actions">
+          <button id="btn-audio" class="action-btn" title="Toggle Sound">🔊 AUDIO</button>
+          <button id="btn-movelist" class="action-btn" title="Move List">📜 MOVE LIST</button>
+          <button id="btn-fullscreen" class="action-btn" title="Toggle Fullscreen">⛶ FULLSCREEN</button>
+        </div>
+      </header>
+
+      <!-- Main Game Canvas Container -->
+      <main class="canvas-wrapper">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Audio Unlock Overlay -->
+        <div id="audio-overlay" class="overlay-prompt">
+          <div class="prompt-box">
+            <h2>⚔️ ENTER THE BATTLEFIELD ⚔️</h2>
+            <p>Click anywhere or press <strong>SPACE</strong> to enable Reiatsu Sound Effects & Dynamic Anime BGM</p>
+            <button id="btn-start" class="btn-primary">AWAKEN SOUL</button>
+          </div>
+        </div>
+
+        <!-- Virtual Touch Controls for Mobile / Tablets -->
+        <div id="touch-controls" class="touch-controls-container">
+          <div class="touch-dpad">
+            <button class="dpad-btn up" data-key="up">▲</button>
+            <div class="dpad-middle">
+              <button class="dpad-btn left" data-key="left">◄</button>
+              <button class="dpad-btn down" data-key="down">▼</button>
+              <button class="dpad-btn right" data-key="right">►</button>
+            </div>
+          </div>
+          <div class="touch-actions">
+            <button class="action-touch-btn light" data-key="light">LIGHT (J)</button>
+            <button class="action-touch-btn heavy" data-key="heavy">HEAVY (K)</button>
+            <button class="action-touch-btn shunpo" data-key="shunpo">SHUNPO (L)</button>
+            <button class="action-touch-btn special" data-key="special">SPECIAL (U)</button>
+            <button class="action-touch-btn charge" data-key="charge">CHARGE (I)</button>
+            <button class="action-touch-btn awaken" data-key="awaken">BANKAI (O)</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Move List & Help Modal -->
+      <div id="movelist-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>⚔️ COMMAND LIST & CONTROLS</h2>
+            <button id="btn-close-modal" class="close-btn">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="control-group">
+              <h3>PLAYER 1 CONTROLS</h3>
+              <table>
+                <tr><td>Move Left / Right</td><td><kbd>A</kbd> / <kbd>D</kbd></td></tr>
+                <tr><td>Jump</td><td><kbd>W</kbd></td></tr>
+                <tr><td>Crouch / Guard Block</td><td><kbd>S</kbd> (Hold)</td></tr>
+                <tr><td>Light Attack</td><td><kbd>J</kbd></td></tr>
+                <tr><td>Heavy Attack</td><td><kbd>K</kbd></td></tr>
+                <tr><td>Flash Step (Shunpo / Sonído)</td><td><kbd>L</kbd></td></tr>
+                <tr><td>Signature Special Move</td><td><kbd>U</kbd> (Costs 35 Reiatsu)</td></tr>
+                <tr><td>Charge Spiritual Pressure</td><td><kbd>I</kbd> (Hold)</td></tr>
+                <tr><td>Bankai / Resurrección / Awakening</td><td><kbd>O</kbd> (Requires 200+ Reiatsu)</td></tr>
+                <tr><td>Cinematic Ultimate Art</td><td><kbd>S</kbd> + <kbd>O</kbd> (Requires 300 Reiatsu)</td></tr>
+              </table>
+            </div>
+            <div class="control-group">
+              <h3>PLAYER 2 CONTROLS</h3>
+              <table>
+                <tr><td>Move / Jump / Block</td><td><kbd>Arrow Keys</kbd></td></tr>
+                <tr><td>Light / Heavy Attacks</td><td><kbd>Num 1</kbd> / <kbd>Num 2</kbd> (or <kbd>7</kbd>/<kbd>8</kbd>)</td></tr>
+                <tr><td>Shunpo Flash Step</td><td><kbd>Num 3</kbd> (or <kbd>9</kbd>)</td></tr>
+                <tr><td>Signature Special</td><td><kbd>Num 4</kbd> (or <kbd>0</kbd>)</td></tr>
+                <tr><td>Charge Reiatsu</td><td><kbd>Num 5</kbd> (or <kbd>-</kbd>)</td></tr>
+                <tr><td>Bankai / Ultimate</td><td><kbd>Num 6</kbd> (or <kbd>=</kbd>)</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

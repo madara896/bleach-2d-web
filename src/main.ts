@@ -1,0 +1,103 @@
+// Bleach: Bankai Resurrection - Main Web Application Entry Point
+import { SceneManager } from './scenes/SceneManager';
+import { audio } from './engine/AudioEngine';
+import { input } from './engine/InputManager';
+
+window.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
+  if (!canvas) {
+    console.error('Canvas element #game-canvas not found!');
+    return;
+  }
+
+  const sceneManager = new SceneManager(canvas);
+
+  // Audio start prompt overlay
+  const audioOverlay = document.getElementById('audio-overlay');
+  const btnStart = document.getElementById('btn-start');
+
+  const unlockAudio = () => {
+    audio.init();
+    audio.resume();
+    if (audioOverlay) {
+      audioOverlay.classList.add('hidden');
+    }
+  };
+
+  btnStart?.addEventListener('click', unlockAudio);
+  audioOverlay?.addEventListener('click', unlockAudio);
+
+  // Spacebar to unlock if prompt is open
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && audioOverlay && !audioOverlay.classList.contains('hidden')) {
+      unlockAudio();
+    }
+  }, { once: true });
+
+  // Toolbar Actions
+  const btnAudio = document.getElementById('btn-audio');
+  btnAudio?.addEventListener('click', () => {
+    audio.init();
+    const isMuted = audio.toggleMute();
+    btnAudio.textContent = isMuted ? '🔇 MUTED' : '🔊 AUDIO';
+  });
+
+  const btnFullscreen = document.getElementById('btn-fullscreen');
+  btnFullscreen?.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn('Fullscreen request failed:', err);
+      });
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.warn('Exit fullscreen failed:', err);
+      });
+    }
+  });
+
+  // Move List Modal
+  const btnMovelist = document.getElementById('btn-movelist');
+  const btnCloseModal = document.getElementById('btn-close-modal');
+  const movelistModal = document.getElementById('movelist-modal');
+
+  btnMovelist?.addEventListener('click', () => {
+    movelistModal?.classList.remove('hidden');
+  });
+
+  btnCloseModal?.addEventListener('click', () => {
+    movelistModal?.classList.add('hidden');
+  });
+
+  movelistModal?.addEventListener('click', (e) => {
+    if (e.target === movelistModal) {
+      movelistModal.classList.add('hidden');
+    }
+  });
+
+  // Mobile Virtual Touch Controls binding
+  const touchButtons = document.querySelectorAll<HTMLButtonElement>('[data-key]');
+  touchButtons.forEach((btn) => {
+    const key = btn.getAttribute('data-key') as keyof typeof input.p1;
+    if (!key) return;
+
+    const activate = (e: Event) => {
+      e.preventDefault();
+      input.touchInputs[key] = true;
+    };
+
+    const deactivate = (e: Event) => {
+      e.preventDefault();
+      input.touchInputs[key] = false;
+    };
+
+    btn.addEventListener('touchstart', activate, { passive: false });
+    btn.addEventListener('touchend', deactivate, { passive: false });
+    btn.addEventListener('touchcancel', deactivate, { passive: false });
+    btn.addEventListener('mousedown', activate);
+    btn.addEventListener('mouseup', deactivate);
+    btn.addEventListener('mouseleave', deactivate);
+  });
+
+  // Start the Game Loop
+  sceneManager.start();
+});
