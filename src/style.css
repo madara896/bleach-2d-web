@@ -110,11 +110,22 @@ body {
   overflow: hidden;
 }
 
-#game-canvas {
+#three-canvas {
+  position: absolute;
   display: block;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#game-canvas {
+  position: absolute;
+  display: block;
+  z-index: 2;
   box-shadow: 0 0 35px rgba(0, 0, 0, 0.9);
   border: 1px solid #27272a;
+  background: transparent;
 }
+
 
 /* Audio Unlock Overlay */
 .overlay-prompt {

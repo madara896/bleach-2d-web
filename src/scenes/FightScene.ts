@@ -1,11 +1,12 @@
-// Bleach AAA Rebuild: Active Match Combat Scene — with Cinematic Bankai System
+// Bleach AAA Rebuild: 3D Active Match Combat Scene powered by Three.js
 import { Fighter } from '../combat/Fighter';
 import { AIController } from '../combat/AIController';
 import { CollisionSystem } from '../combat/CollisionSystem';
 import { Camera2D } from '../engine/Camera2D';
 import { VFXEngine } from '../engine/VFXEngine';
-import { StageRenderer } from '../render/StageRenderer';
-import { SpriteRenderer, spriteRenderer } from '../render/SpriteRenderer';
+import { ThreeRenderer } from '../render/ThreeRenderer';
+import { Stage3D } from '../render/Stage3D';
+import { CharacterMesh3D } from '../render/CharacterMesh3D';
 import { UIRenderer } from '../render/UIRenderer';
 import { BankaiCinematic } from '../render/BankaiCinematic';
 import { lighting } from '../engine/LightingSystem';
@@ -21,16 +22,21 @@ export class FightScene {
 
   public camera: Camera2D;
   public vfx: VFXEngine;
-  private stageRenderer: StageRenderer;
   private bankai: BankaiCinematic;
   private ai: AIController | null = null;
+
+  // 3D Engine Elements
+  private threeRenderer: ThreeRenderer;
+  private stage3D: Stage3D;
+  private p1Mesh: CharacterMesh3D;
+  private p2Mesh: CharacterMesh3D;
 
   // Screen flash on hit
   private screenFlash: number = 0;
 
   // Match State
   public round: number = 1;
-  public maxRounds: number = 3;      // Best of 3
+  public maxRounds: number = 3; // Best of 3
   public p1RoundsWon: number = 0;
   public p2RoundsWon: number = 0;
   public roundTimer: number = 99;
@@ -46,13 +52,14 @@ export class FightScene {
     stage: StageDefinition,
     gameMode: GameMode,
     canvasWidth: number,
-    canvasHeight: number
+    canvasHeight: number,
+    threeRenderer: ThreeRenderer
   ) {
     this.stage = stage;
     this.gameMode = gameMode;
     this.vfx = new VFXEngine();
-    this.stageRenderer = new StageRenderer();
     this.bankai = new BankaiCinematic();
+    this.threeRenderer = threeRenderer;
 
     const startP1X = stage.width / 2 - 200;
     const startP2X = stage.width / 2 + 200;
@@ -61,6 +68,18 @@ export class FightScene {
     this.p2 = new Fighter(2, p2Def, startP2X, stage.groundY, this.vfx);
 
     this.camera = new Camera2D(canvasWidth, canvasHeight, stage.width, stage.height);
+
+    // ── Build 3D World ────────────────────────────────────────────────────────
+    this.stage3D = new Stage3D(this.stage, this.threeRenderer.scene);
+
+    this.p1Mesh = new CharacterMesh3D(this.p1.charDef);
+    this.p2Mesh = new CharacterMesh3D(this.p2.charDef);
+
+    this.threeRenderer.scene.add(this.p1Mesh.group);
+    this.threeRenderer.scene.add(this.p2Mesh.group);
+
+    this.p1Mesh.setGamePosition(this.p1.x, this.p1.y);
+    this.p2Mesh.setGamePosition(this.p2.x, this.p2.y);
 
     if (this.gameMode !== 'VS_2P') {
       const diff = this.gameMode === 'TRAINING' ? 'PRACTICE' : 'NORMAL';
@@ -88,7 +107,7 @@ export class FightScene {
       return false;
     }
 
-    // 2. Camera
+    // 2. 2D Camera for VFX alignment
     this.camera.update(this.p1.x, this.p1.y, this.p2.x, this.p2.y);
 
     if (this.camera.hitstopFrames > 0) return false;
@@ -111,10 +130,7 @@ export class FightScene {
       }
     }
 
-    // 5. Lighting update
-    lighting.update();
-
-    // 6. Player Inputs
+    // 5. Player Inputs
     this.handlePlayerInput(this.p1, input.p1);
     if (this.gameMode === 'VS_2P') {
       this.handlePlayerInput(this.p2, input.p2);
@@ -127,7 +143,7 @@ export class FightScene {
       this.p2.reiatsu = Math.max(250, this.p2.reiatsu);
     }
 
-    // 7. Active combat
+    // 6. Active combat
     if (this.matchState === 'FIGHTING') {
       if (this.gameMode !== 'TRAINING') {
         this.roundTimer -= 1 / 60;
@@ -159,7 +175,23 @@ export class FightScene {
       }
     }
 
-    // 8. VFX
+    // 7. Update 3D Character Meshes
+    this.p1Mesh.setGamePosition(this.p1.x, this.p1.y);
+    this.p1Mesh.update(this.p1.state, this.p1.facing, this.p1.isAwakened, this.p1.reiatsu, this.p1.hp, this.p1.maxHp);
+
+    this.p2Mesh.setGamePosition(this.p2.x, this.p2.y);
+    this.p2Mesh.update(this.p2.state, this.p2.facing, this.p2.isAwakened, this.p2.reiatsu, this.p2.hp, this.p2.maxHp);
+
+    // 8. Update 3D Camera with dynamic tracking
+    this.threeRenderer.updateCamera(this.p1.x, this.p2.x);
+
+    // 9. Update Dynamic 3D Point Lights
+    const p1LightIntensity = this.p1.isAwakened ? 5.0 : this.p1.reiatsu > 150 ? 2.5 : 0.8;
+    const p2LightIntensity = this.p2.isAwakened ? 5.0 : this.p2.reiatsu > 150 ? 2.5 : 0.8;
+    this.threeRenderer.updateFighterLight(this.threeRenderer.p1Light, this.p1.x, this.p1.y, this.p1.charDef.reiatsuColor, p1LightIntensity);
+    this.threeRenderer.updateFighterLight(this.threeRenderer.p2Light, this.p2.x, this.p2.y, this.p2.charDef.reiatsuColor, p2LightIntensity);
+
+    // 10. VFX
     this.vfx.update();
 
     return false;
@@ -251,14 +283,14 @@ export class FightScene {
         lighting.spawnImpactLight(this.p2.x, this.p2.y - 200, this.p1.charDef.reiatsuColor);
         if (hb.isHeavy) this.screenFlash = 0.35;
 
-        // Wall bounce — if p2 hits stage wall, give juggle opportunity
+        // Wall bounce
         if (Math.abs(this.p2.x - 40) < 20 || Math.abs(this.p2.x - (this.stage.width - 40)) < 20) {
           this.p2.vx = -this.p2.vx * 1.4;
           this.camera.addTrauma(0.3);
           this.vfx.spawnExplosion(this.p2.x, this.p2.y - 150, '#ffffff', 14);
         }
 
-        // Check if this is a KO ultimate
+        // KO ultimate trigger
         if (this.p2.hp <= 0 && this.p1.state === 'ULTIMATE') {
           this.triggerBankaiCinematic(this.p1, this.p2);
           return;
@@ -383,38 +415,16 @@ export class FightScene {
   // ─── Render Pass ─────────────────────────────────────────────────────────
 
   public render(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number): void {
+    // 1. Render 3D World (Stage + 3D Cel-shaded Characters + Dynamic Lighting + Bloom)
+    this.threeRenderer.render();
+
+    // 2. Render 2D World VFX (Projectiles, Energy Slashes, Clashes)
     this.camera.resize(canvasWidth, canvasHeight);
-
-    // Bankai cinematic zoom
-    const bankaiZoom = this.bankai.state?.zoom ?? 1.0;
-    if (bankaiZoom !== 1.0) {
-      this.camera.targetZoom = bankaiZoom;
-    }
-
-    // 1. World pass
     this.camera.applyTransform(ctx);
-
-    // Stage background
-    this.stageRenderer.render(ctx, this.stage, this.camera.x, this.camera.y);
-
-    // Lighting auras (behind fighters)
-    lighting.renderLighting(ctx, this.p1, this.p2);
-
-    // World VFX
     this.vfx.renderWorld(ctx);
-
-    // Fighters — draw further one first (depth sort)
-    if (this.p1.x < this.p2.x) {
-      spriteRenderer.renderFighter(ctx, this.p1);
-      spriteRenderer.renderFighter(ctx, this.p2);
-    } else {
-      spriteRenderer.renderFighter(ctx, this.p2);
-      spriteRenderer.renderFighter(ctx, this.p1);
-    }
-
     this.camera.restoreTransform(ctx);
 
-    // 2. Screen overlay pass
+    // 3. Screen overlay pass
     this.vfx.renderScreenOverlay(ctx, canvasWidth, canvasHeight);
 
     // Screen flash on hit
@@ -422,7 +432,7 @@ export class FightScene {
       lighting.renderHitFlash(ctx, canvasWidth, canvasHeight, this.screenFlash * 0.5);
     }
 
-    // Vignette for atmosphere
+    // Vignette for cinematic mood
     lighting.renderVignette(ctx, canvasWidth, canvasHeight);
 
     // Bankai cinematic overlay (on top of everything)
@@ -430,7 +440,7 @@ export class FightScene {
       this.bankai.render(ctx, canvasWidth, canvasHeight);
     }
 
-    // HUD
+    // Battle HUD
     UIRenderer.renderBattleHUD(
       ctx,
       canvasWidth,
@@ -442,5 +452,19 @@ export class FightScene {
       this.p2RoundsWon,
       this.announcement
     );
+  }
+
+  public dispose(): void {
+    if (this.p1Mesh) {
+      this.threeRenderer.scene.remove(this.p1Mesh.group);
+      this.p1Mesh.dispose();
+    }
+    if (this.p2Mesh) {
+      this.threeRenderer.scene.remove(this.p2Mesh.group);
+      this.p2Mesh.dispose();
+    }
+    if (this.stage3D) {
+      this.stage3D.dispose();
+    }
   }
 }

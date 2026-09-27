@@ -1,8 +1,9 @@
-// Bleach 2D Web Game: Master Scene Manager & Game Loop
+// Bleach 2D/3D Web Game: Master Scene Manager & Game Loop
 import { TitleScene } from './TitleScene';
 import { RosterSelectScene } from './RosterSelectScene';
 import { StageSelectScene } from './StageSelectScene';
 import { FightScene } from './FightScene';
+import { ThreeRenderer } from '../render/ThreeRenderer';
 import { input } from '../engine/InputManager';
 import { audio } from '../engine/AudioEngine';
 import type { GameState, GameMode, CharacterDefinition, StageDefinition } from '../types';
@@ -10,6 +11,8 @@ import type { GameState, GameMode, CharacterDefinition, StageDefinition } from '
 export class SceneManager {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  private threeCanvas: HTMLCanvasElement;
+  public threeRenderer: ThreeRenderer;
 
   private state: GameState = 'TITLE';
   private selectedMode: GameMode = 'VS_CPU';
@@ -27,11 +30,16 @@ export class SceneManager {
   public width: number = 1280;
   public height: number = 720;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, threeCanvas: HTMLCanvasElement) {
     this.canvas = canvas;
+    this.threeCanvas = threeCanvas;
+
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Could not get 2D context');
     this.ctx = context;
+
+    // Initialize WebGL Three.js Renderer
+    this.threeRenderer = new ThreeRenderer(this.threeCanvas, 1280, 720);
 
     this.titleScene = new TitleScene();
     this.rosterScene = new RosterSelectScene();
@@ -67,9 +75,16 @@ export class SceneManager {
 
     this.canvas.width = 1280 * dpr;
     this.canvas.height = 720 * dpr;
-
     this.canvas.style.width = `${targetW}px`;
     this.canvas.style.height = `${targetH}px`;
+
+    if (this.threeCanvas) {
+      this.threeCanvas.width = 1280 * dpr;
+      this.threeCanvas.height = 720 * dpr;
+      this.threeCanvas.style.width = `${targetW}px`;
+      this.threeCanvas.style.height = `${targetH}px`;
+      this.threeRenderer.resize(1280, 720);
+    }
 
     this.ctx.resetTransform();
     this.ctx.scale(dpr, dpr);
@@ -148,7 +163,8 @@ export class SceneManager {
             st,
             this.selectedMode,
             this.width,
-            this.height
+            this.height,
+            this.threeRenderer
           );
           this.state = 'FIGHTING';
         }
@@ -159,7 +175,7 @@ export class SceneManager {
         if (this.fightScene) {
           const matchDone = this.fightScene.update();
           if (matchDone) {
-            // Return to roster select after match
+            this.fightScene.dispose();
             this.state = 'ROSTER_SELECT';
             this.rosterScene.p1Character = null;
             this.rosterScene.p2Character = null;

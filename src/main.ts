@@ -6,8 +6,9 @@ import { preloadGameAssets } from './engine/SpriteLoader';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
-  if (!canvas) {
-    console.error('Canvas element #game-canvas not found!');
+  const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement;
+  if (!canvas || !threeCanvas) {
+    console.error('Canvas elements not found!');
     return;
   }
 
@@ -16,7 +17,8 @@ window.addEventListener('DOMContentLoaded', () => {
   canvas.focus();
   canvas.setAttribute('tabindex', '0');
 
-  const sceneManager = new SceneManager(canvas);
+  const sceneManager = new SceneManager(canvas, threeCanvas);
+
 
   // Start preloading all sprites in background (non-blocking)
   preloadGameAssets().catch(console.warn);
