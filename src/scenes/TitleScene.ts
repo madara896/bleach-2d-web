@@ -13,8 +13,32 @@ export class TitleScene {
 
   private tick: number = 0;
 
-  public update(keysJustPressed: { up: boolean; down: boolean; confirm: boolean }): GameMode | null {
+  public update(
+    keysJustPressed: { up: boolean; down: boolean; confirm: boolean },
+    mouseClick: { x: number; y: number } | null,
+    width: number,
+    height: number
+  ): GameMode | null {
     this.tick++;
+
+    // Mouse click selection
+    if (mouseClick) {
+      const menuY = height * 0.54;
+      const itemHeight = 44;
+      for (let i = 0; i < this.modes.length; i++) {
+        const y = menuY + i * itemHeight;
+        if (
+          mouseClick.x >= width / 2 - 200 &&
+          mouseClick.x <= width / 2 + 200 &&
+          mouseClick.y >= y - 20 &&
+          mouseClick.y <= y + 20
+        ) {
+          this.selectedIndex = i;
+          audio.playSwordClash();
+          return this.modes[i].id;
+        }
+      }
+    }
 
     if (keysJustPressed.up) {
       this.selectedIndex = (this.selectedIndex - 1 + this.modes.length) % this.modes.length;
@@ -99,11 +123,11 @@ export class TitleScene {
       if (isSelected) {
         ctx.save();
         // Selection highlight bar
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
         ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.shadowColor = '#ef4444';
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 18;
 
         ctx.strokeRect(width / 2 - 200, y - 20, 400, 36);
         ctx.fillRect(width / 2 - 200, y - 20, 400, 36);
@@ -127,9 +151,9 @@ export class TitleScene {
     ctx.fillText(this.modes[this.selectedIndex].desc, width / 2, height * 0.84);
 
     // Call to Action
-    ctx.font = '600 13px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#64748b';
-    ctx.fillText('Press [W/S] or [▲/▼] to Select  •  Press [J] or [SPACE] or [ENTER] to Confirm', width / 2, height * 0.92);
+    ctx.font = '600 14px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText('Press [W/S] or [▲/▼] to Navigate  •  Press [J], [SPACE], or [ENTER] to Deploy (Or CLICK with Mouse)', width / 2, height * 0.92);
     ctx.restore();
   }
 }

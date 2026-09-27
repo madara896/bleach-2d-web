@@ -37,6 +37,9 @@ export class SceneManager {
     this.rosterScene = new RosterSelectScene();
     this.stageScene = new StageSelectScene();
 
+    // Register mouse/touch coordinates with input manager
+    input.registerCanvasEvents(canvas);
+
     this.resize();
     window.addEventListener('resize', () => this.resize());
 
@@ -85,21 +88,22 @@ export class SceneManager {
 
   private update(): void {
     input.update();
+    const mouseClick = input.consumeMouseClick();
 
     const keysJustPressed = {
-      up: input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp'),
-      down: input.isKeyJustPressed('KeyS') || input.isKeyJustPressed('ArrowDown'),
-      left: input.isKeyJustPressed('KeyA') || input.isKeyJustPressed('ArrowLeft'),
-      right: input.isKeyJustPressed('KeyD') || input.isKeyJustPressed('ArrowRight'),
-      confirm: input.isKeyJustPressed('KeyJ') || input.isKeyJustPressed('Space') || input.isKeyJustPressed('Enter'),
-      back: input.isKeyJustPressed('Escape') || input.isKeyJustPressed('Backspace'),
-      tabPrev: input.isKeyJustPressed('KeyQ'),
-      tabNext: input.isKeyJustPressed('KeyE')
+      up: input.isKeyJustPressed('KeyW', 'w', 'ArrowUp'),
+      down: input.isKeyJustPressed('KeyS', 's', 'ArrowDown'),
+      left: input.isKeyJustPressed('KeyA', 'a', 'ArrowLeft'),
+      right: input.isKeyJustPressed('KeyD', 'd', 'ArrowRight'),
+      confirm: input.isKeyJustPressed('KeyJ', 'j', 'Space', 'Enter', 'confirm'),
+      back: input.isKeyJustPressed('Escape', 'Backspace', 'back'),
+      tabPrev: input.isKeyJustPressed('KeyQ', 'q'),
+      tabNext: input.isKeyJustPressed('KeyE', 'e')
     };
 
     switch (this.state) {
       case 'TITLE': {
-        const mode = this.titleScene.update(keysJustPressed);
+        const mode = this.titleScene.update(keysJustPressed, mouseClick, this.width, this.height);
         if (mode) {
           this.selectedMode = mode;
           this.state = 'ROSTER_SELECT';
@@ -110,16 +114,11 @@ export class SceneManager {
       }
 
       case 'ROSTER_SELECT': {
-        const res = this.rosterScene.update({
-          left: keysJustPressed.left,
-          right: keysJustPressed.right,
-          up: keysJustPressed.up,
-          down: keysJustPressed.down,
-          tabPrev: keysJustPressed.tabPrev,
-          tabNext: keysJustPressed.tabNext,
-          confirm: keysJustPressed.confirm,
-          back: keysJustPressed.back
-        });
+        const res = this.rosterScene.update(
+          keysJustPressed,
+          mouseClick,
+          this.width
+        );
 
         if (res && res.ready) {
           this.p1Selection = res.p1;
@@ -130,11 +129,16 @@ export class SceneManager {
       }
 
       case 'STAGE_SELECT': {
-        const st = this.stageScene.update({
-          left: keysJustPressed.left,
-          right: keysJustPressed.right,
-          confirm: keysJustPressed.confirm
-        });
+        const st = this.stageScene.update(
+          {
+            left: keysJustPressed.left,
+            right: keysJustPressed.right,
+            confirm: keysJustPressed.confirm
+          },
+          mouseClick,
+          this.width,
+          this.height
+        );
 
         if (st && this.p1Selection && this.p2Selection) {
           this.stageSelection = st;

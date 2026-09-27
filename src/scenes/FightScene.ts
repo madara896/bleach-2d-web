@@ -159,25 +159,29 @@ export class FightScene {
   private handlePlayerInput(fighter: Fighter, inp: typeof input.p1): void {
     if (this.matchState !== 'FIGHTING') return;
 
-    // Movement
+    // Movement & Guard
     if (fighter.canAct()) {
-      if (inp.left) {
-        fighter.setState('WALK');
-        fighter.vx = -fighter.charDef.stats.walkSpeed * (fighter.isAwakened ? 1.25 : 1.0);
-      } else if (inp.right) {
-        fighter.setState('WALK');
-        fighter.vx = fighter.charDef.stats.walkSpeed * (fighter.isAwakened ? 1.25 : 1.0);
-      } else if (inp.down) {
-        fighter.setState('BLOCK');
-      } else if (fighter.state === 'WALK') {
-        fighter.setState('IDLE');
-      }
+      if (inp.down) {
+        if (fighter.state !== 'BLOCK') fighter.setState('BLOCK');
+      } else {
+        if (fighter.state === 'BLOCK') fighter.setState('IDLE');
 
-      // Jump
-      if (inp.upPressed && fighter.isGrounded) {
-        fighter.vy = -fighter.charDef.stats.jumpForce;
-        fighter.isGrounded = false;
-        fighter.setState('JUMP');
+        if (inp.left) {
+          fighter.setState('WALK');
+          fighter.vx = -fighter.charDef.stats.walkSpeed * (fighter.isAwakened ? 1.25 : 1.0);
+        } else if (inp.right) {
+          fighter.setState('WALK');
+          fighter.vx = fighter.charDef.stats.walkSpeed * (fighter.isAwakened ? 1.25 : 1.0);
+        } else if (fighter.state === 'WALK') {
+          fighter.setState('IDLE');
+        }
+
+        // Jump
+        if (inp.upPressed && fighter.isGrounded) {
+          fighter.vy = -fighter.charDef.stats.jumpForce;
+          fighter.isGrounded = false;
+          fighter.setState('JUMP');
+        }
       }
     }
 

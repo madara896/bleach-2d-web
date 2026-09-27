@@ -10,29 +10,47 @@ window.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // Ensure window & canvas have keyboard focus
+  window.focus();
+  canvas.focus();
+  canvas.setAttribute('tabindex', '0');
+
   const sceneManager = new SceneManager(canvas);
 
   // Audio start prompt overlay
   const audioOverlay = document.getElementById('audio-overlay');
   const btnStart = document.getElementById('btn-start');
 
+  let isUnlocked = false;
   const unlockAudio = () => {
+    if (isUnlocked) return;
+    isUnlocked = true;
     audio.init();
     audio.resume();
     if (audioOverlay) {
       audioOverlay.classList.add('hidden');
+      audioOverlay.style.display = 'none'; // completely remove from hit-testing
     }
+    window.focus();
+    canvas.focus();
   };
 
   btnStart?.addEventListener('click', unlockAudio);
   audioOverlay?.addEventListener('click', unlockAudio);
+  canvas.addEventListener('click', () => {
+    unlockAudio();
+    window.focus();
+    canvas.focus();
+  });
 
-  // Spacebar to unlock if prompt is open
-  window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && audioOverlay && !audioOverlay.classList.contains('hidden')) {
-      unlockAudio();
-    }
-  }, { once: true });
+  // Any key or pointer unlocks audio & dismisses overlay immediately
+  window.addEventListener('keydown', () => {
+    if (!isUnlocked) unlockAudio();
+  });
+
+  window.addEventListener('pointerdown', () => {
+    if (!isUnlocked) unlockAudio();
+  });
 
   // Toolbar Actions
   const btnAudio = document.getElementById('btn-audio');
@@ -66,11 +84,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   btnCloseModal?.addEventListener('click', () => {
     movelistModal?.classList.add('hidden');
+    window.focus();
   });
 
   movelistModal?.addEventListener('click', (e) => {
     if (e.target === movelistModal) {
       movelistModal.classList.add('hidden');
+      window.focus();
     }
   });
 
@@ -82,6 +102,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const activate = (e: Event) => {
       e.preventDefault();
+      unlockAudio();
       input.touchInputs[key] = true;
     };
 

@@ -115,6 +115,7 @@ export class Fighter {
       'IDLE',
       'WALK',
       'CROUCH',
+      'BLOCK',
       'JUMP',
       'FALL'
     ].includes(this.state);
@@ -376,6 +377,10 @@ export class Fighter {
         break;
 
       case 'WALK':
+        this.currentHitbox = null;
+        break;
+
+      case 'BLOCK':
         this.currentHitbox = null;
         break;
 

@@ -1,4 +1,4 @@
-// Bleach 2D Web Game: Roster Select Scene with Multi-Faction Support
+// Bleach 2D Web Game: Roster Select Scene with Multi-Faction Support & Mouse Controls
 import { ROSTER, type CharacterDefinition } from '../data/characters/Roster';
 import type { Faction } from '../types';
 import { audio } from '../engine/AudioEngine';
@@ -18,20 +18,100 @@ export class RosterSelectScene {
     return ROSTER.filter(c => c.faction === this.currentFaction);
   }
 
-  public update(keysJustPressed: {
-    left: boolean;
-    right: boolean;
-    up: boolean;
-    down: boolean;
-    tabPrev: boolean;
-    tabNext: boolean;
-    confirm: boolean;
-    back: boolean;
-  }): { ready: boolean; p1: CharacterDefinition; p2: CharacterDefinition } | null {
+  public update(
+    keysJustPressed: {
+      left: boolean;
+      right: boolean;
+      up: boolean;
+      down: boolean;
+      tabPrev: boolean;
+      tabNext: boolean;
+      confirm: boolean;
+      back: boolean;
+    },
+    mouseClick: { x: number; y: number } | null,
+    width: number
+  ): { ready: boolean; p1: CharacterDefinition; p2: CharacterDefinition } | null {
     this.tick++;
     const roster = this.getFilteredRoster();
 
-    // Tab Faction Navigation (Q/E)
+    // Handle Mouse Clicks
+    if (mouseClick) {
+      // 1. Check Faction Tabs
+      const tabY = 85;
+      const tabW = 140;
+      const startX = width / 2 - (this.factions.length * tabW) / 2;
+      for (let i = 0; i < this.factions.length; i++) {
+        const x = startX + i * tabW;
+        if (
+          mouseClick.x >= x &&
+          mouseClick.x <= x + tabW &&
+          mouseClick.y >= tabY &&
+          mouseClick.y <= tabY + 30
+        ) {
+          this.currentFaction = this.factions[i];
+          this.selectedIndex = 0;
+          audio.playHitLight();
+          return null;
+        }
+      }
+
+      // 2. Check Character Cards
+      const gridX = 60;
+      const gridY = 145;
+      const cols = 4;
+      const cardW = 120;
+      const cardH = 140;
+      const gap = 16;
+
+      for (let i = 0; i < roster.length; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = gridX + col * (cardW + gap);
+        const y = gridY + row * (cardH + gap);
+
+        if (
+          mouseClick.x >= x &&
+          mouseClick.x <= x + cardW &&
+          mouseClick.y >= y &&
+          mouseClick.y <= y + cardH
+        ) {
+          this.selectedIndex = i;
+          audio.playSwordClash();
+          const chosen = roster[i];
+
+          if (!this.p1Character) {
+            this.p1Character = chosen;
+          } else if (!this.p2Character) {
+            this.p2Character = chosen;
+            return { ready: true, p1: this.p1Character, p2: this.p2Character };
+          }
+          return null;
+        }
+      }
+
+      // 3. Check "DEPLOY TO BATTLE" button if clicked
+      const pX = width * 0.52;
+      const btnY = 560;
+      const btnW = width * 0.43;
+      if (
+        mouseClick.x >= pX &&
+        mouseClick.x <= pX + btnW &&
+        mouseClick.y >= btnY &&
+        mouseClick.y <= btnY + 44
+      ) {
+        audio.playSwordClash();
+        const chosen = roster[this.selectedIndex];
+        if (!this.p1Character) {
+          this.p1Character = chosen;
+        } else if (!this.p2Character) {
+          this.p2Character = chosen;
+          return { ready: true, p1: this.p1Character, p2: this.p2Character };
+        }
+      }
+    }
+
+    // Keyboard Tab Faction Navigation (Q/E)
     if (keysJustPressed.tabPrev) {
       const idx = this.factions.indexOf(this.currentFaction);
       this.currentFaction = this.factions[(idx - 1 + this.factions.length) % this.factions.length];
@@ -120,9 +200,9 @@ export class RosterSelectScene {
     // Bottom Selection Status
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = '600 13px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('P1: ' + (this.p1Character ? this.p1Character.name : 'Choosing...') + '   VS   P2: ' + (this.p2Character ? this.p2Character.name : 'Waiting...'), width / 2, height - 20);
+    ctx.font = '600 14px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText('P1: ' + (this.p1Character ? this.p1Character.name : 'Choosing...') + '   VS   P2: ' + (this.p2Character ? this.p2Character.name : 'Waiting... (Click Card or Press J/Space/Enter to Confirm)'), width / 2, height - 16);
     ctx.restore();
   }
 
@@ -233,11 +313,11 @@ export class RosterSelectScene {
     const pX = width * 0.52;
     const pY = 145;
     const pW = width * 0.43;
-    const pH = height - 220;
+    const pH = height - 210;
 
     ctx.save();
     // Glassmorphic details panel
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
     ctx.strokeStyle = c.reiatsuColor;
     ctx.lineWidth = 2;
     ctx.shadowColor = c.reiatsuColor;
@@ -251,46 +331,58 @@ export class RosterSelectScene {
     ctx.textAlign = 'left';
     ctx.font = '900 28px "Segoe UI", sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(c.name.toUpperCase(), pX + 24, pY + 40);
+    ctx.fillText(c.name.toUpperCase(), pX + 24, pY + 36);
 
     ctx.font = 'italic 600 15px "Segoe UI", sans-serif';
     ctx.fillStyle = c.themeColor;
-    ctx.fillText(`【 ${c.title} 】`, pX + 24, pY + 65);
+    ctx.fillText(`【 ${c.title} 】`, pX + 24, pY + 60);
 
     // Faction Badge
     ctx.fillStyle = '#334155';
-    ctx.roundRect(pX + 24, pY + 78, 120, 20, 3);
+    ctx.roundRect(pX + 24, pY + 74, 130, 20, 3);
     ctx.fill();
     ctx.font = '700 11px sans-serif';
     ctx.fillStyle = '#38bdf8';
-    ctx.fillText(`FACTION: ${c.faction.toUpperCase()}`, pX + 32, pY + 92);
+    ctx.fillText(`FACTION: ${c.faction.toUpperCase()}`, pX + 32, pY + 88);
 
     // Stats Section
-    const statsY = pY + 125;
+    const statsY = pY + 116;
     this.renderStatBar(ctx, pX + 24, statsY, 'HP', c.stats.maxHp / 1250, '#22c55e');
-    this.renderStatBar(ctx, pX + 24, statsY + 28, 'ATTACK', c.stats.attackPower / 1.45, '#ef4444');
-    this.renderStatBar(ctx, pX + 24, statsY + 56, 'SPEED', c.stats.dashSpeed / 16.0, '#38bdf8');
-    this.renderStatBar(ctx, pX + 24, statsY + 84, 'REIATSU', c.stats.reiatsuGainRate / 1.3, '#f59e0b');
+    this.renderStatBar(ctx, pX + 24, statsY + 26, 'ATTACK', c.stats.attackPower / 1.45, '#ef4444');
+    this.renderStatBar(ctx, pX + 24, statsY + 52, 'SPEED', c.stats.dashSpeed / 16.0, '#38bdf8');
+    this.renderStatBar(ctx, pX + 24, statsY + 78, 'REIATSU', c.stats.reiatsuGainRate / 1.3, '#f59e0b');
 
     // Awakening / Bankai Details
-    const awkY = statsY + 130;
+    const awkY = statsY + 118;
     ctx.fillStyle = '#facc15';
     ctx.font = '800 14px "Segoe UI", sans-serif';
     ctx.fillText(`⚡ RELEASE: ${c.awakeningName}`, pX + 24, awkY);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 12px "Segoe UI", sans-serif';
-    ctx.fillText(c.awakeningDescription, pX + 24, awkY + 20, pW - 48);
+    ctx.fillText(c.awakeningDescription, pX + 24, awkY + 18, pW - 48);
 
     // Ultimate Art
     ctx.fillStyle = '#ef4444';
     ctx.font = '800 14px "Segoe UI", sans-serif';
-    ctx.fillText(`☠ ULTIMATE: ${c.ultimateName}`, pX + 24, awkY + 54);
+    ctx.fillText(`☠ ULTIMATE: ${c.ultimateName}`, pX + 24, awkY + 46);
 
     // Character Quote
     ctx.fillStyle = '#cbd5e1';
     ctx.font = 'italic 500 13px "Segoe UI", serif';
-    ctx.fillText(`"${c.quotes.select}"`, pX + 24, awkY + 88, pW - 48);
+    ctx.fillText(`"${c.quotes.select}"`, pX + 24, awkY + 74, pW - 48);
+
+    // Big Select Button
+    const btnY = pY + pH - 50;
+    ctx.fillStyle = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+    ctx.fillStyle = '#dc2626';
+    ctx.roundRect(pX + 24, btnY, pW - 48, 38, 4);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.font = '800 15px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('⚔️ CONFIRM SELECTION (CLICK OR PRESS J/ENTER)', pX + pW / 2, btnY + 24);
 
     ctx.restore();
   }

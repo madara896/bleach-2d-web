@@ -1,4 +1,4 @@
-// Bleach 2D Web Game: Stage Select Scene
+// Bleach 2D Web Game: Stage Select Scene with Mouse Support
 import { STAGES, type StageDefinition } from '../data/stages/Stages';
 import { audio } from '../engine/AudioEngine';
 
@@ -6,8 +6,37 @@ export class StageSelectScene {
   public selectedIndex: number = 0;
   private tick: number = 0;
 
-  public update(keysJustPressed: { left: boolean; right: boolean; confirm: boolean }): StageDefinition | null {
+  public update(
+    keysJustPressed: { left: boolean; right: boolean; confirm: boolean },
+    mouseClick: { x: number; y: number } | null,
+    width: number,
+    height: number
+  ): StageDefinition | null {
     this.tick++;
+
+    // Mouse click on stage cards
+    if (mouseClick) {
+      const cardW = 280;
+      const cardH = 340;
+      const gap = 24;
+      const totalW = STAGES.length * (cardW + gap) - gap;
+      const startX = width / 2 - totalW / 2;
+      const cardY = height * 0.28;
+
+      for (let i = 0; i < STAGES.length; i++) {
+        const x = startX + i * (cardW + gap);
+        if (
+          mouseClick.x >= x &&
+          mouseClick.x <= x + cardW &&
+          mouseClick.y >= cardY &&
+          mouseClick.y <= cardY + cardH
+        ) {
+          this.selectedIndex = i;
+          audio.playSwordClash();
+          return STAGES[i];
+        }
+      }
+    }
 
     if (keysJustPressed.left) {
       this.selectedIndex = (this.selectedIndex - 1 + STAGES.length) % STAGES.length;
@@ -28,8 +57,6 @@ export class StageSelectScene {
   public render(ctx: CanvasRenderingContext2D, width: number, height: number): void {
     ctx.fillStyle = '#05070e';
     ctx.fillRect(0, 0, width, height);
-
-    const activeStage = STAGES[this.selectedIndex];
 
     // Title
     ctx.save();
@@ -91,6 +118,15 @@ export class StageSelectScene {
       ctx.fillStyle = '#38bdf8';
       ctx.fillText(stage.location, x + cardW / 2, cardY + 280);
 
+      // Deploy Button
+      const btnY = cardY + cardH - 42;
+      ctx.fillStyle = isSelected ? '#0284c7' : '#1e293b';
+      ctx.roundRect(x + 16, btnY, cardW - 32, 28, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 12px "Segoe UI", sans-serif';
+      ctx.fillText('DEPLOY (CLICK)', x + cardW / 2, btnY + 18);
+
       ctx.restore();
     });
 
@@ -98,8 +134,8 @@ export class StageSelectScene {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.font = '600 14px "Segoe UI", sans-serif';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText('Press [A/D] or [◄/►] to Browse  •  Press [J] or [SPACE] or [ENTER] to Deploy', width / 2, height - 60);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText('Press [A/D] or [◄/►] to Browse  •  Press [J], [SPACE], or [ENTER] to Deploy (Or CLICK a Stage)', width / 2, height - 50);
     ctx.restore();
   }
 }
